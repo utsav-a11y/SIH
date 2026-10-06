@@ -1,24 +1,27 @@
-# ☀️ SAVITR
-## Low-Power, Real-Time Adaptive Software-Defined Sonar Transmitter Payload for Autonomous Underwater Vehicles
+<div align="center">
 
-> **Adaptive sonar waveform generation using an offline physics engine, environmental-state lookup table, and real-time embedded waveform synthesis.**
+<img src="assets/banner.svg" alt="SAVITR - Adaptive Sonar Transmitter Payload" width="100%"/>
 
-<p align="center">
+<br/>
+
+**Adaptive sonar waveform generation using an offline physics engine, environmental-state lookup table, and real-time embedded waveform synthesis.**
+
+<br/>
 
 ![ESP32](https://img.shields.io/badge/ESP32-Embedded-blue?style=for-the-badge&logo=espressif)
-![C/C++](https://img.shields.io/badge/C%2FC%2B%2B-Firmware-red?style=for-the-badge&logo=cplusplus)
+![C++](https://img.shields.io/badge/C%2B%2B-Firmware-red?style=for-the-badge&logo=cplusplus)
 ![Python](https://img.shields.io/badge/Python-Physics%20Engine-yellow?style=for-the-badge&logo=python)
 ![Sonar](https://img.shields.io/badge/SONAR-Adaptive%20Transmission-0A7EA4?style=for-the-badge)
-![Real Time](https://img.shields.io/badge/Real--Time-%3C60%C2%B5s-success?style=for-the-badge)
-![SIH 2026](https://img.shields.io/badge/Smart%20India%20Hackathon-2026-orange?style=for-the-badge)
+![Real Time](https://img.shields.io/badge/Real--Time-Embedded-success?style=for-the-badge)
 
-</p>
+<br/>
 
-<p align="center">
+![SIH](https://img.shields.io/badge/Smart%20India%20Hackathon-SIH26058-orange?style=flat-square)
+![Ministry](https://img.shields.io/badge/Ministry-Earth%20Sciences-blue?style=flat-square)
+![Category](https://img.shields.io/badge/Category-Software%20%2B%20Embedded-blueviolet?style=flat-square)
+![Prototype](https://img.shields.io/badge/Prototype-Working%20Concept-success?style=flat-square)
 
-**Smart India Hackathon 2026 · SIH26058 · Ministry of Earth Sciences**
-
-</p>
+</div>
 
 ---
 
@@ -28,287 +31,241 @@
 - [Overview](#-overview)
 - [Problem](#-problem)
 - [Proposed Solution](#-proposed-solution)
-- [System Architecture](#-system-architecture)
+- [Core Innovation](#-core-innovation)
 - [Environmental State Space](#-environmental-state-space)
-- [Offline Physics Engine](#-offline-physics-engine)
 - [10,000-State Lookup Table](#-10000-state-lookup-table)
+- [Physics Engine](#-offline-physics-engine)
 - [Adaptive Waveform Selection](#-adaptive-waveform-selection)
-- [Runtime Pipeline](#-runtime-pipeline)
-- [Embedded Implementation](#-embedded-implementation)
-- [Technical Specifications](#-technical-specifications)
-- [Validation](#-validation)
-- [Advantages](#-advantages)
-- [Challenges](#-challenges)
-- [Future Roadmap](#-future-roadmap)
+- [Frequency & Bandwidth](#-frequency--bandwidth)
+- [System Architecture](#-system-architecture)
+- [Embedded Runtime](#-embedded-runtime)
+- [Memory & Performance](#-memory--performance)
+- [Technology Stack](#-technology-stack)
+- [Applications](#-applications)
+- [Innovation](#-innovation)
+- [Future Scope](#-future-scope)
+- [Project Status](#-project-status)
 - [References](#-references)
 
 ---
 
-# 🚨 Smart India Hackathon
+## 🚨 Smart India Hackathon
+
+**Problem Statement:** Development of a Low-Power, Real-Time Adaptive Software-Defined Sonar Transmitter Payload for Autonomous Underwater Vehicles (AUVs)
 
 | Parameter | Details |
 |---|---|
-| **Problem Statement ID** | SIH26058 |
-| **Problem Statement** | Development of a Low-Power, Real-Time Adaptive Software-Defined Sonar Transmitter Payload for Autonomous Underwater Vehicles (AUVs) |
-| **Organization** | Ministry of Earth Sciences |
-| **Hackathon** | Smart India Hackathon 2026 |
-| **Category** | Hardware / Software |
-| **Domain** | Underwater Technology / Sonar / Embedded Systems |
+| **SIH Problem Statement** | SIH26058 |
+| **Ministry** | Ministry of Earth Sciences |
+| **Domain** | Autonomous Underwater Vehicles |
+| **Category** | Software + Embedded |
+| **System** | Adaptive Software-Defined Sonar |
+| **Target Platform** | ESP32 Prototype |
 
 ---
 
-# 🌊 Overview
+## 🌊 Overview
 
-Autonomous Underwater Vehicles (AUVs) operate in highly variable underwater environments where **depth, turbidity, temperature and salinity** can significantly affect acoustic propagation.
+**SAVITR — Software-Defined Adaptive Sonar Transmitter Payload** is a low-power, real-time adaptive sonar transmission architecture designed for **Autonomous Underwater Vehicles (AUVs)**.
 
-A conventional sonar transmitter generally operates with a predetermined waveform configuration.
+Instead of transmitting a fixed waveform regardless of underwater conditions, SAVITR converts environmental observations into an optimized sonar waveform configuration.
 
-This creates a fundamental limitation:
+The system considers:
 
-> **The transmitted waveform may not remain optimal as the underwater environment changes.**
+- 🌊 Depth
+- 🌫️ Turbidity
+- 🌡️ Temperature
+- 🧂 Salinity
+- 🔊 Acoustic attenuation
+- ⚡ Required transmission voltage
+- 🎯 Detection conditions
 
-SAVITR addresses this problem using a **software-defined adaptive sonar transmitter architecture**.
-
-The system:
-
-- Measures environmental parameters
-- Converts them into discrete environmental states
-- Uses an offline physics engine to characterize acoustic conditions
-- Maps each environmental state to an optimized transmission configuration
-- Stores the resulting configurations in a compact lookup table
-- Performs real-time waveform selection on an ESP32
-- Generates the required waveform using a DAC
-- Adapts transmission parameters without performing expensive physics calculations during runtime
+The computationally intensive physics calculations are performed **offline**, while the embedded system performs lightweight lookup and waveform-generation operations during runtime.
 
 ---
 
-# 🎯 Problem
+## 🎯 Problem
 
-AUV sonar systems must operate under changing underwater conditions.
+Underwater acoustic propagation changes with environmental conditions.
 
-The acoustic environment changes with:
+A conventional fixed-parameter transmitter may continue using the same:
 
-- 🌊 **Depth**
-- 🌫️ **Turbidity**
-- 🌡️ **Temperature**
-- 🧂 **Salinity**
+```text
+Frequency
+   ↓
+Bandwidth
+   ↓
+Amplitude
+   ↓
+Pulse Duration
+   ↓
+Waveform
+```
 
-These parameters influence:
+even when the underwater environment changes.
 
-- Acoustic absorption
-- Scattering
-- Propagation loss
-- Required transmission amplitude
-- Detection performance
-- Suitable waveform characteristics
+This can result in inefficient transmission and unnecessary computational or power requirements.
 
-A conventional fixed waveform system cannot efficiently adapt to these changing conditions.
+### SAVITR Approach
 
-### Key challenges
-
-- High computational cost of real-time acoustic modelling
-- Limited embedded processing resources
-- Power constraints on AUV platforms
-- Changing underwater propagation conditions
-- Requirement for deterministic real-time behaviour
-- Need for adaptive waveform selection
-- Need to maintain sufficient detection performance
+```text
+Environmental Conditions
+          ↓
+State Quantisation
+          ↓
+Physics-Based Lookup
+          ↓
+Adaptive Waveform
+          ↓
+Real-Time Transmission
+```
 
 ---
 
-# 💡 Proposed Solution
+## 💡 Proposed Solution
 
-SAVITR introduces an **offline physics-driven state-to-waveform mapping architecture**.
-
-Instead of repeatedly running complex acoustic calculations on the embedded controller:
+SAVITR uses a **physics-informed, lookup-table-driven adaptive architecture**.
 
 ```text
 Environmental Sensors
-        │
-        ▼
-┌─────────────────────┐
-│ Environmental State │
-│ D · Turb · T · S    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Offline Physics     │
-│ Engine               │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ 10,000-State LUT    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ ESP32 Runtime       │
-│ State Lookup        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Waveform Generator  │
-│ DAC + DMA + Timer   │
-└──────────┬──────────┘
-           │
-           ▼
-      SONAR OUTPUT
+        ↓
+Environmental State Quantisation
+        ↓
+10,000-State Physics Lookup Table
+        ↓
+Adaptive Waveform Selection
+        ↓
+Frequency + Bandwidth + Amplitude
+        ↓
+Pulse Duration + Windowing
+        ↓
+Real-Time Waveform Synthesis
+        ↓
+DAC / Sonar Transmitter
 ```
 
-The expensive calculations are performed **offline**, while the embedded system performs only a lightweight lookup and waveform-generation operation.
+The key design principle is:
+
+> **Compute complex physics offline. Perform fast adaptation at runtime.**
 
 ---
 
-# 🧭 System Architecture
+## 🧠 Core Innovation
+
+SAVITR separates the system into two computational layers.
+
+### Offline Layer
 
 ```text
-                    UNDERWATER ENVIRONMENT
-                              │
-             ┌────────────────┼────────────────┐
-             │                │                │
-             ▼                ▼                ▼
-          Depth          Turbidity       Temperature
-             │                │                │
-             └────────────────┼────────────────┘
-                              │
-                         Salinity
-                              │
-                              ▼
-                  ┌────────────────────┐
-                  │ State Quantization │
-                  │   10 × 10 × 10 × 10│
-                  └─────────┬──────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │ 10,000-State Physics │
-                 │        LUT           │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                ┌────────────────────────┐
-                │ Waveform Configuration │
-                │                        │
-                │ Type                   │
-                │ Frequency              │
-                │ Bandwidth              │
-                │ Amplitude              │
-                │ Pulse Duration         │
-                └───────────┬────────────┘
-                            │
-                            ▼
-                       ESP32 Runtime
-                            │
-                  ┌─────────┴─────────┐
-                  │                   │
-                  ▼                   ▼
-              Hardware             DMA
-               Timer              Streaming
-                  │                   │
-                  └─────────┬─────────┘
-                            ▼
-                           DAC
-                            │
-                            ▼
-                    ADAPTIVE SONAR
-                       TRANSMISSION
+Physics Models
+      +
+Environmental State Space
+      +
+Sonar Equation
+      +
+Waveform Selection Rules
+      ↓
+10,000-State Lookup Table
 ```
+
+### Runtime Layer
+
+```text
+Sensor Inputs
+      ↓
+Quantisation
+      ↓
+LUT Address
+      ↓
+Waveform Configuration
+      ↓
+Embedded Synthesis
+      ↓
+Sonar Transmission
+```
+
+This avoids repeatedly executing computationally expensive acoustic models on the microcontroller.
 
 ---
 
-# 🌐 Environmental State Space
+## 🌐 Environmental State Space
 
-The environmental state is represented as:
+SAVITR models the environment using four variables.
 
-```text
-E = (D, Turb, T, S)
-```
-
-Where:
-
-| Parameter | Symbol | Range |
+| Variable | Range | Bins |
 |---|---:|---:|
-| Depth | `D` | 0–100 m |
-| Turbidity | `Turb` | 0–100 NTU |
-| Temperature | `T` | 0–30 °C |
-| Salinity | `S` | 0–40 ppt |
+| Depth (D) | 0–100 m | 10 |
+| Turbidity (Turb) | 0–100 NTU | 10 |
+| Temperature (T) | 0–30 °C | 10 |
+| Salinity (S) | 0–40 ppt | 10 |
 
-Each parameter is divided into **10 uniform bins**.
+Each variable is divided into **10 uniform bins**.
 
 Therefore:
 
 ```text
-10 × 10 × 10 × 10
-= 10,000 environmental states
+10 × 10 × 10 × 10 = 10,000 states
 ```
-
-Each state is represented by a centroid value for runtime quantization.
 
 ---
 
-# 🧮 LUT Addressing
+## 🔢 LUT Addressing
 
-Each environmental state is converted into a single lookup-table index:
+Each environmental state is converted into a single lookup-table address:
 
 ```text
 idx = 1000d + 100t + 10θ + σ
 ```
 
-Where:
+where:
 
 ```text
-d     → depth bin
-t     → turbidity bin
-θ     → temperature bin
-σ     → salinity bin
+d  = depth bin
+t  = turbidity bin
+θ  = temperature bin
+σ  = salinity bin
 ```
 
-This allows the ESP32 to directly access the configuration associated with the current environmental state.
+The system uses **centroid quantisation** to map sensor measurements to environmental bins.
 
-### LUT Structure
+---
 
-Each state stores:
+## 🗃️ 10,000-State Lookup Table
 
-```text
-[wtype, fidx, Bidx, Adac, qτ]
-```
+Each environmental state maps to a precomputed waveform configuration.
 
-Where:
+Conceptually:
 
-| Field | Description |
+| Parameter | Description |
 |---|---|
 | `wtype` | Waveform type |
 | `fidx` | Frequency index |
 | `Bidx` | Bandwidth index |
 | `Adac` | DAC amplitude |
-| `qτ` | Quantized pulse duration |
+| `qτ` | Quantised pulse duration |
+
+The runtime controller retrieves the corresponding row instead of recalculating the complete physics model.
 
 ---
 
-# ⚙️ Offline Physics Engine
+## 🔬 Offline Physics Engine
 
-The physics engine evaluates the acoustic behaviour of each environmental state before deployment.
+The offline physics engine generates the LUT before deployment.
 
-The model incorporates:
+It incorporates:
 
-### Acoustic propagation
+- Underwater acoustic propagation
+- Frequency-dependent attenuation
+- Environmental conditions
+- Required transmission voltage
+- Sonar detection constraints
+- Waveform selection logic
 
-- Absorption
-- Scattering
-- Transmission loss
-- Required voltage
-- Detection condition
+### Acoustic Absorption
 
-### Absorption model
+SAVITR uses the **Francois-Garrison absorption model**.
 
-The system uses the:
-
-**Francois–Garrison absorption model**
-
-### Scattering model
+Additional scattering attenuation is modeled as:
 
 ```text
 αscat = Ks × Turb × (f / 100)²
@@ -320,130 +277,83 @@ with:
 Ks = 5 × 10⁻⁴
 ```
 
-### Detection criterion
+---
 
-The sonar detection condition is:
+## 📡 Sonar Detection Model
 
-```text
-SNR ≥ 10 dB
-```
-
-with the defined demo parameters:
+The demonstration model uses:
 
 ```text
 TS = 10 dB
 NL = 40 dB
+Required SNR ≥ 10 dB
 ```
+
+The system evaluates transmission requirements and uses them to determine the appropriate waveform configuration.
 
 ---
 
-# 📦 10,000-State Lookup Table
+## 📶 Adaptive Waveform Selection
 
-The complete environmental space is precomputed offline.
+SAVITR supports three waveform strategies.
 
-```text
-10,000 states
-        │
-        ▼
-Physics evaluation
-        │
-        ▼
-Waveform optimisation
-        │
-        ▼
-Configuration generation
-        │
-        ▼
-LUT
-```
-
-### Memory footprint
-
-```text
-10,000 × 5 bytes
-≈ 50,000 bytes
-≈ 49 KB
-```
-
-Additional waveform arrays require approximately:
-
-```text
-≈ 150 KB
-```
-
-Total approximate memory requirement:
-
-```text
-≈ 200 KB
-```
-
-This makes the approach suitable for resource-constrained embedded deployment.
-
----
-
-# 📡 Adaptive Waveform Selection
-
-SAVITR selects the waveform according to the calculated acoustic/environmental state.
-
-### LFM Chirp
-
-Selected when:
+### 1. LFM Chirp
 
 ```text
 Γ < 0.55
 AND
-Turbidity < 60
+Turbidity < 60 NTU
 ```
 
-### Barker-13 Phase Code
+Used for relatively favorable environmental conditions.
 
-Selected when:
+### 2. Barker-13 Phase Code
 
 ```text
 Γ ≥ 0.55
 AND
-Turbidity ≥ 60
+Turbidity ≥ 60 NTU
 ```
 
-### Geometric Sweep
+Used for more challenging environmental conditions.
 
-Selected when:
+### 3. Geometric Sweep
 
 ```text
 Γ < 0.45
 AND
-(
-    Range ≥ 60 m
-    OR
-    Temperature ≤ 10 °C
-)
+(R ≥ 60 m OR T ≤ 10 °C)
 ```
 
-This allows the transmitter to adapt its waveform strategy rather than relying on a single fixed transmission scheme.
+Provides an additional adaptive transmission strategy.
 
 ---
 
-# 📶 Frequency Selection
+## 🎚️ Frequency & Bandwidth
 
-The supported frequency set is:
-
-```text
-{500, 400, 300, 200, 100} kHz
-```
-
-For the ESP32 demonstration platform, frequencies are scaled by a factor of 10:
+### Candidate Frequencies
 
 ```text
-10 – 50 kHz
+500 kHz
+400 kHz
+300 kHz
+200 kHz
+100 kHz
 ```
 
-This allows the same adaptive decision architecture to be demonstrated using hardware suitable for the prototype.
+For the ESP32 demonstration, these are scaled by a factor of 10:
 
----
+```text
+50 kHz
+40 kHz
+30 kHz
+20 kHz
+10 kHz
+```
 
-# 📊 Bandwidth Selection
+### Bandwidth Selection
 
-Bandwidth is selected using the available voltage headroom.
+Voltage headroom:
 
 ```text
 H = 20 log₁₀(Vmax / Vreq)
@@ -455,19 +365,17 @@ with:
 Vmax = 5 V
 ```
 
-### Decision logic
-
 | Headroom | Bandwidth |
-|---|---|
-| `H > 10 dB` | Wide → 100 kHz |
-| `3 dB < H ≤ 10 dB` | Medium → 50 kHz |
-| `H ≤ 3 dB` | Narrow → 20 kHz |
+|---|---:|
+| H > 10 dB | 100 kHz |
+| 3 dB < H ≤ 10 dB | 50 kHz |
+| H ≤ 3 dB | 20 kHz |
 
 ---
 
-# 🔊 Amplitude & Pulse Duration
+## ⚡ Amplitude & Pulse Duration
 
-The DAC amplitude is calculated as:
+DAC amplitude:
 
 ```text
 Adac = clamp(
@@ -480,266 +388,413 @@ Adac = clamp(
 Pulse duration:
 
 ```text
-τms = 2.0 + 6.0 × (Vreq / Vmax)
+τms = 2.0 + 6.0(Vreq / Vmax)
 ```
 
 with:
 
 ```text
-τmin = 2 ms
-τmax = 8 ms
+2 ms ≤ τ ≤ 8 ms
 ```
 
-A **Hamming window** is used for waveform shaping.
+### Windowing
+
+SAVITR uses a **Hamming window** for waveform shaping.
 
 ---
 
-# ⚡ Runtime Pipeline
-
-Once deployed, the ESP32 does not need to repeat the complete physics calculation.
-
-Instead:
+## 🏗️ System Architecture
 
 ```text
-ADC Sensors
-    │
-    ▼
-Read D / Turb / T / S
-    │
-    ▼
-Quantize → Environmental Bins
-    │
-    ▼
-Calculate LUT Index
-    │
-    ▼
-Fetch LUT Row
-    │
-    ├── Waveform Type
-    ├── Frequency
-    ├── Bandwidth
-    ├── Amplitude
-    └── Pulse Duration
-    │
-    ▼
-Hardware Timer
-    │
-    ▼
-DMA
-    │
-    ▼
-DAC
-    │
-    ▼
-Adaptive Sonar Pulse
+┌─────────────────────────────┐
+│    Environmental Sensors    │
+│ Depth / Turbidity / Temp / S│
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│      ADC Acquisition        │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Environmental Quantisation  │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│     10,000-State LUT        │
+│   Physics-Based Mapping     │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│   Adaptive Waveform Logic   │
+│ LFM / Barker-13 / Sweep     │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│ Frequency / Bandwidth / Amp │
+│       Pulse Duration        │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│   Real-Time Waveform Engine │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│       DAC + DMA + Timer     │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│      SONAR TRANSMITTER      │
+└─────────────────────────────┘
 ```
 
 ---
 
-# ⏱️ Real-Time Operation
+## ⚙️ Embedded Runtime
 
-The architecture is designed for deterministic embedded execution.
+The ESP32 performs a lightweight runtime pipeline:
 
-### Runtime adaptation latency
+```text
+ADC Read
+   ↓
+Bin Quantisation
+   ↓
+LUT Index Calculation
+   ↓
+LUT Row Fetch
+   ↓
+Waveform Parameters
+   ↓
+Hardware Timer
+   ↓
+DMA Waveform Streaming
+   ↓
+DAC Output
+```
+
+The embedded controller therefore avoids repeatedly running the complete physics engine.
+
+---
+
+## 🚀 Runtime Configuration
+
+The LUT returns:
+
+```text
+[wtype, fidx, Bidx, Adac, qτ]
+```
+
+The hardware timer controls pulse duration while DMA streams the generated waveform to the DAC.
+
+### Target Adaptation Latency
 
 ```text
 < 60 µs
 ```
 
-The runtime path avoids expensive:
+---
 
-- Physics calculations
-- Optimisation loops
-- Acoustic model evaluation
-- Dynamic waveform selection algorithms
+## 💾 Memory & Performance
 
-Instead, the embedded controller performs:
+| Component | Approximate Size |
+|---|---:|
+| LUT | 10,000 × 5 bytes |
+| LUT memory | ~50 KB |
+| LUT size | ~49 KB |
+| Waveform arrays | ~150 KB |
+| Total | ~200 KB |
+| Target adaptation latency | < 60 µs |
+
+The compact LUT representation enables complex environmental decisions to be stored in a form suitable for embedded execution.
+
+---
+
+## 🔄 End-to-End Operation
 
 ```text
-SENSE → QUANTIZE → LOOKUP → GENERATE
+UNDERWATER ENVIRONMENT
+          ↓
+Environmental Sensors
+          ↓
+ADC Acquisition
+          ↓
+State Quantisation
+          ↓
+LUT Address
+          ↓
+10,000-State Physics LUT
+          ↓
+Waveform Selection
+      ↙      ↓      ↘
+    LFM    Barker   Sweep
+      ↘      ↓      ↙
+ Frequency + Bandwidth
+          ↓
+ Amplitude + Duration
+          ↓
+ Hamming Window
+          ↓
+ Waveform Synthesis
+          ↓
+      DAC / DMA
+          ↓
+ SONAR TRANSMISSION
 ```
 
 ---
 
-# 🧠 Embedded Implementation
+## 🧪 Example Environmental States
 
-The ESP32 performs the real-time portion of the system.
+| Depth | Turbidity | Temperature | Salinity | Example Waveform |
+|---:|---:|---:|---:|---|
+| 10 m | 20 NTU | 25 °C | 35 ppt | LFM |
+| 40 m | 50 NTU | 20 °C | 35 ppt | LFM |
+| 70 m | 80 NTU | 15 °C | 37 ppt | Barker-13 |
+| 90 m | 30 NTU | 8 °C | 38 ppt | Geometric Sweep |
 
-### Runtime components
+---
 
-| Component | Function |
+## 🛠️ Technology Stack
+
+### Embedded
+
+- ESP32
+- C++
+- ADC
+- DAC
+- Hardware Timer
+- DMA
+
+### Physics & Simulation
+
+- Python
+- Sonar equation
+- Francois-Garrison absorption model
+- Scattering model
+- Lookup-table generation
+
+### Signal Processing
+
+- LFM Chirp
+- Barker-13 Phase Coding
+- Geometric Sweep
+- Hamming Window
+- Adaptive bandwidth selection
+
+---
+
+## 🌊 Applications
+
+SAVITR is designed for potential use in:
+
+- Autonomous Underwater Vehicles
+- Marine Mapping
+- Seafloor Survey
+- Oceanographic Research
+- Underwater Monitoring
+- Autonomous Navigation
+- Subsea Exploration
+- Distributed Underwater Sensor Networks
+
+---
+
+## 💡 Innovation
+
+SAVITR combines:
+
+```text
+Physics-Based Modeling
+        +
+Environmental State Quantisation
+        +
+10,000-State Lookup Table
+        +
+Software-Defined Waveforms
+        +
+Real-Time Embedded Synthesis
+```
+
+### Key Idea
+
+> **Compute complex physics once. Adapt the waveform continuously.**
+
+Compared with a fixed-parameter transmitter, SAVITR introduces environment-aware selection of waveform, frequency, bandwidth, amplitude and pulse duration.
+
+---
+
+## 📊 Conventional vs SAVITR
+
+| Conventional Transmitter | SAVITR |
 |---|---|
-| ADC | Environmental sensor acquisition |
-| Quantizer | Converts measurements into bins |
-| LUT | Stores precomputed configurations |
-| Hardware Timer | Controls pulse timing |
-| DMA | Streams waveform samples |
-| DAC | Generates analogue waveform |
-| Firmware | Coordinates the complete runtime pipeline |
+| Fixed waveform | Adaptive waveform |
+| Fixed frequency | Environment-dependent frequency |
+| Fixed bandwidth | Adaptive bandwidth |
+| Fixed amplitude | Adaptive amplitude |
+| Heavy runtime computation | Offline physics + LUT |
+| Static configuration | Software-defined configuration |
+| Limited environmental adaptation | 10,000-state environmental mapping |
 
 ---
 
-# 🛠️ Technology Stack
+## 🔮 Future Scope
 
-<p align="center">
+Future development can extend SAVITR toward:
 
-![ESP32](https://img.shields.io/badge/ESP32-Embedded%20Controller-blue?style=flat-square)
-![Python](https://img.shields.io/badge/Python-Physics%20Engine-yellow?style=flat-square)
-![C++](https://img.shields.io/badge/C%2FC%2B%2B-Firmware-red?style=flat-square)
-![DAC](https://img.shields.io/badge/DAC-Waveform%20Generation-purple?style=flat-square)
-![DMA](https://img.shields.io/badge/DMA-Real--Time%20Streaming-green?style=flat-square)
+### Hardware
 
-</p>
+- Real underwater transducer
+- Power amplifier
+- High-speed DAC
+- Waterproof sensor package
+- Full AUV integration
 
-### Core technologies
+### Software
 
-- **ESP32**
-- **C/C++ embedded firmware**
-- **Python-based offline physics engine**
-- **DAC waveform generation**
-- **DMA waveform streaming**
-- **Hardware timers**
-- **Lookup-table optimisation**
+- Larger environmental state spaces
+- Dynamic LUT updates
+- Machine-learning-assisted optimization
+- Online environmental estimation
+- Mission-level adaptive control
 
----
-
-# 🧪 Validation
-
-The prototype architecture can be evaluated across representative environmental states.
-
-Validation focuses on:
-
-- Correct environmental-state quantization
-- Correct LUT addressing
-- Correct waveform selection
-- Frequency selection
-- Bandwidth selection
-- DAC amplitude calculation
-- Pulse-duration calculation
-- Runtime latency
-- Memory footprint
-- Adaptive behaviour across environmental conditions
-
----
-
-# 🚀 Advantages
-
-### ⚡ Low Runtime Computation
-
-Complex physics calculations are moved offline.
-
-### 🧠 Adaptive
-
-Waveform parameters change according to the environmental state.
-
-### 🔋 Low-Power Friendly
-
-The embedded controller performs lightweight deterministic operations.
-
-### ⏱️ Real-Time
-
-The lookup-based runtime path targets sub-60 µs adaptation latency.
-
-### 📦 Compact
-
-The complete state-to-waveform LUT is approximately 49 KB.
-
-### 🔧 Software-Defined
-
-The waveform strategy can be changed through firmware/LUT updates without redesigning the entire transmitter architecture.
-
-### 🌊 Environment-Aware
-
-The transmitter considers:
+### Closed-Loop Sonar
 
 ```text
-Depth
-Turbidity
-Temperature
-Salinity
+Environmental Sensors
+        ↓
+Adaptive Transmitter
+        ↓
+Underwater Channel
+        ↓
+Echo / Received Signal
+        ↓
+Signal Processing
+        ↓
+Detection Performance
+        ↓
+Feedback
+        ↺
+Adaptive Waveform
 ```
 
-rather than operating with a fixed configuration.
+This can evolve SAVITR toward a closed-loop intelligent sonar transmission system.
 
 ---
 
-# ⚠️ Challenges
-
-The major engineering challenges include:
-
-- Accurate acoustic modelling
-- Embedded memory constraints
-- Real-time waveform generation
-- Environmental sensor quantization
-- Maintaining deterministic latency
-- Balancing detection performance and power consumption
-- Translating theoretical acoustic models into an embedded implementation
-
----
-
-# 💡 Innovation
-
-The central innovation of SAVITR is the separation of:
+## 📁 Project Structure
 
 ```text
-PHYSICS INTELLIGENCE
-        ↓
-OFFLINE
-        ↓
-LOOKUP TABLE
-        ↓
-REAL-TIME EMBEDDED EXECUTION
-```
-
-Instead of forcing a resource-constrained AUV controller to repeatedly solve computationally expensive acoustic models, SAVITR converts the physics into a compact **state-to-waveform intelligence layer**.
-
-This creates a bridge between:
-
-**Acoustic Physics → AI/Algorithmic Decision → Embedded Real-Time Transmission**
-
----
-
-# 🗺️ Roadmap
-
-```text
-[x] Environmental state-space definition
-[x] Physics-based modelling
-[x] 10,000-state LUT architecture
-[x] Waveform-selection logic
-[x] Embedded runtime architecture
-[x] ESP32 demonstration concept
-[ ] Hardware-integrated underwater testing
-[ ] Hydrophone-based closed-loop validation
-[ ] Expanded environmental state resolution
-[ ] Hardware transmitter integration
-[ ] AUV field deployment
+SAVITR/
+│
+├── assets/
+│   └── banner.svg
+│
+├── firmware/
+│   ├── main.cpp
+│   ├── waveform_generator.cpp
+│   ├── waveform_generator.h
+│   ├── lut.cpp
+│   └── lut.h
+│
+├── physics_engine/
+│   ├── sonar_model.py
+│   ├── absorption.py
+│   ├── scattering.py
+│   ├── waveform_selection.py
+│   └── generate_lut.py
+│
+├── data/
+│   └── lookup_table/
+│
+├── simulation/
+│
+├── docs/
+│
+└── README.md
 ```
 
 ---
 
-# 📚 References
+## 🚧 Challenges
 
-The project is based on research and established models in:
+The prototype addresses several constraints associated with AUV payloads:
+
+- Limited onboard processing
+- Limited memory
+- Power constraints
+- Changing underwater conditions
+- Frequency-dependent attenuation
+- Real-time adaptation requirements
+- Hardware voltage limitations
+- Transducer integration
+
+---
+
+## 📈 Expected Impact
+
+SAVITR aims to provide:
+
+- ⚡ Low computational overhead
+- 🔄 Fast waveform reconfiguration
+- 🌊 Environmental adaptability
+- 🔋 More efficient transmission decisions
+- 💻 Compact embedded implementation
+- 📡 Software-defined sonar flexibility
+- 🤖 AUV-ready adaptive architecture
+
+---
+
+## 🟢 Project Status
+
+| Module | Status |
+|---|---|
+| Environmental state model | 🟢 |
+| Physics engine concept | 🟢 |
+| 10,000-state LUT | 🟢 |
+| Waveform selection logic | 🟢 |
+| Adaptive parameter selection | 🟢 |
+| ESP32 runtime architecture | 🟢 |
+| Real-time waveform synthesis | 🟡 |
+| Physical transducer integration | 🟡 |
+| Full AUV deployment | 🔵 |
+
+**Legend:**  
+🟢 Implemented / demonstrated concept  
+🟡 Prototype / integration stage  
+🔵 Future development
+
+---
+
+## 📚 References
+
+The SAVITR architecture is based on established concepts in:
 
 - Underwater acoustic propagation
-- Sonar equation modelling
-- Acoustic absorption
-- Scattering
-- Adaptive waveform design
+- Sonar equation and detection theory
+- Acoustic absorption modeling
+- Software-defined signal generation
+- Embedded waveform synthesis
 - Autonomous underwater vehicle systems
-- Embedded real-time signal generation
-- Francois–Garrison absorption modelling
+- Adaptive sonar transmission
+
+Detailed research-paper references can be maintained in the project documentation.
 
 ---
 
-# 👨‍💻 Project
+## 🏆 Smart India Hackathon 2026
 
-**SAVITR — Software-Defined Adaptive Sonar Transmitter Payload**
+<div align="center">
 
-**Smart India Hackathon 2026**
+**SAVITR**
 
-**Problem Statement:** SIH26058
+### Software-Defined Adaptive Sonar Transmitter Payload
 
-**Organization:** Ministry of Earth Sciences
+**SIH 2026 • SIH26058 • Ministry of Earth Sciences**
 
-> *Making sonar transmission adaptive, computationally efficient, and environment-aware for next-generation autonomous underwater systems.*
+<br/>
+
+🌊 **ADAPT • COMPUTE • TRANSMIT**
+
+<br/>
+
+*Making sonar transmission environment-aware.*
+
+</div>
