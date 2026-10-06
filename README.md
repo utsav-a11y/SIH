@@ -499,11 +499,11 @@ The hardware timer controls pulse duration while DMA streams the generated wavef
 
 | Component | Approximate Size |
 |---|---:|
-| LUT | 10,000 × 5 bytes |
-| LUT memory | ~50 KB |
-| LUT size | ~49 KB |
+| LUT | 10,000 × 4 bytes |
+| LUT memory | ~40 KB |
+| LUT size | ~39 KB |
 | Waveform arrays | ~150 KB |
-| Total | ~200 KB |
+| Total | ~190 KB |
 | Target adaptation latency | < 60 µs |
 
 The compact LUT representation enables complex environmental decisions to be stored in a form suitable for embedded execution.
