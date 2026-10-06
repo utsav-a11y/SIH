@@ -395,7 +395,7 @@ with:
 
 ### Windowing
 
-SAVITR uses a **Hann/Blackman window applied offline for waveform shaping to suppress spectral leakage.** for waveform shaping.
+SAVITR uses a **Hann/Blackman window applied offline for waveform shaping to suppress spectral leakage.**
 
 ---
 
