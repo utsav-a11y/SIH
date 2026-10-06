@@ -679,6 +679,24 @@ Adaptive Waveform
 
 This can evolve SAVITR toward a closed-loop intelligent sonar transmission system.
 
+### Runtime Scalar Adaptation: Target Range & Velocity
+
+While the 4D LUT handles the *water conditions* (Depth, Turbidity, Temp, Salinity), SAVITR handles dynamic platform constraints like **Target Range** and **AUV Velocity** as post-fetch runtime scalars.
+
+**Why not add Range to the LUT?**
+Adding Target Range (10 bins) and Velocity (10 bins) to the 4D state space would create $10^6$ (1,000,000) states. At 4 bytes per state, this requires **4 MB of Flash memory**, which exceeds the ESP32's capacity.
+
+**The Solution: Post-Fetch Scalars**
+Instead of bloating the LUT, the firmware applies Range and Velocity as mathematical scalars *after* fetching the 4-byte configuration:
+*   **Range Scaling:** Dynamically scales the transmit amplitude (`Adac`) and pulse duration (`qτ`) based on the target distance to maintain the Sonar Equation margin.
+*   **Velocity Compensation:** Applies a Doppler correction factor for high-speed AUV maneuvers.
+
+This allows SAVITR to support full **6-parameter adaptation** (Environment + Range + Velocity) while keeping the core LUT strictly at a lightweight **40 KB**.
+
+### 4th Waveform Family: Hyperbolic FM (HFM)
+
+For high-velocity AUV maneuvers, SAVITR plans to integrate **Hyperbolic Frequency Modulation (HFM)** as a 4th waveform family. Unlike LFM, HFM is inherently Doppler-tolerant, maintaining pulse compression performance under high relative velocities. Like the other waveforms, HFM will be pre-computed by the offline Python physics engine and streamed via zero-CPU DMA.
+
 ---
 
 ## 📁 Project Structure
