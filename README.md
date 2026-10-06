@@ -341,15 +341,11 @@ Provides an additional adaptive transmission strategy.
 100 kHz
 ```
 
-For the ESP32 demonstration, these are scaled by a factor of 10:
+### Target Frequencies
 
-```text
-50 kHz
-40 kHz
-30 kHz
-20 kHz
-10 kHz
-```
+**Target Frequencies:** 100, 200, 300, 400, 500 kHz.
+
+**PoC Validation:** The exact same adaptive logic was validated on the ESP32 at a scaled **10–20 kHz range (100 kSPS)** due to PoC hardware bandwidth limits. The digital architecture (LUT + DMA) remains identical; only the sample rate and analog front-end change for the final target.
 
 ### Bandwidth Selection
 
@@ -399,7 +395,7 @@ with:
 
 ### Windowing
 
-SAVITR uses a **Hamming window** for waveform shaping.
+SAVITR uses a **Hann/Blackman window applied offline for waveform shaping to suppress spectral leakage.** for waveform shaping.
 
 ---
 
@@ -480,7 +476,13 @@ The embedded controller therefore avoids repeatedly running the complete physics
 The LUT returns:
 
 ```text
-[wtype, fidx, Bidx, Adac, qτ]
+## 🗃️ 10,000-State Lookup Table
+
+Each environmental state maps to a precomputed 4-byte waveform configuration:
+
+`[wtype, fidx, Adac, qτ]`
+
+**Memory Optimization:** `fidx` inherently couples Center Frequency and Bandwidth. This allows 4 bytes to command all 5 adaptive parameters, keeping the LUT strictly at **40 KB** to fit within ESP32 Flash limits.
 ```
 
 The hardware timer controls pulse duration while DMA streams the generated waveform to the DAC.
